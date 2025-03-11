@@ -132,11 +132,6 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/install-kernel-akmods && \
-    curl -L https://github.com/WinkelCode/it87/releases/download/snapshot-2023-05-09T17_22_34Z/release-redhat-akmods-rpm.tar.gz -o /tmp/release-redhat-akmods-rpm.tar.gz && \
-    mkdir /tmp/it87 && \
-    tar -xzvf /tmp/release-redhat-akmods-rpm.tar.gz -C /tmp/it87 && \
-    dnf5 install /tmp/it87/*.rpm -y && \
-    rm -rf /tmp/release-redhat-akmods-rpm.tar.gz /tmp/it87 && \
     dnf5 -y config-manager setopt "*rpmfusion*".enabled=0 && \
     dnf5 -y copr enable bieszczaders/kernel-cachyos-addons && \
     dnf5 -y install \
@@ -523,6 +518,20 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5 \
         tar -xz --strip-components=1 && \
     ./install.sh && \
     cd / && \
+    /ctx/cleanup
+
+RUN --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=cache,dst=/var/cache/rpm-ostree \
+    --mount=type=bind,from=akmods,src=/kernel-rpms,dst=/tmp/kernel-rpms \
+    --mount=type=bind,from=akmods,src=/rpms,dst=/tmp/akmods-rpms \
+    --mount=type=bind,from=akmods-extra,src=/rpms,dst=/tmp/akmods-extra-rpms \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
+    curl -L https://github.com/WinkelCode/it87/releases/download/snapshot-2023-05-09T17_22_34Z/release-redhat-akmods-rpm.tar.gz -o /tmp/release-redhat-akmods-rpm.tar.gz && \
+    mkdir /tmp/it87 && \
+    tar -xzvf /tmp/release-redhat-akmods-rpm.tar.gz -C /tmp/it87 && \
+    dnf5 install /tmp/it87/*.rpm -y && \
+    rm -rf /tmp/release-redhat-akmods-rpm.tar.gz /tmp/it87 && \
     /ctx/cleanup
 
 # Cleanup & Finalize
